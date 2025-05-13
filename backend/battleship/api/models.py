@@ -26,3 +26,31 @@ class Game(models.Model):
     phase = models.CharField(max_length=15, choices=PHASE_CHOICES.items(), default=PHASE_WAITING)
     winner = models.ForeignKey(Player, related_name="winner", on_delete=models.SET_NULL, blank=True, null=True)
     owner = models.ForeignKey(Player, related_name="owner", on_delete=models.SET_NULL, null=True)
+
+class Board(models.Model):
+    game = models.ForeignKey(Game, related_name="boards", on_delete=models.CASCADE)
+    player = models.ForeignKey(Player, related_name="boards", on_delete=models.CASCADE)
+    prepared = models.BooleanField(default=False)
+
+class Vessel(models.Model):
+    size = models.IntegerField(validators=[MinValueValidator(1)])
+    name = models.CharField(max_length=50)
+    image = models.CharField(max_length=200)  # ruta o URL de la imatge
+
+class BoardVessel(models.Model):
+    board = models.ForeignKey(Board, related_name="board_vessels", on_delete=models.CASCADE)
+    vessel = models.ForeignKey(Vessel, related_name="board_vessels", on_delete=models.CASCADE)
+    ri = models.IntegerField()
+    ci = models.IntegerField()
+    rf = models.IntegerField()
+    cf = models.IntegerField()
+    alive = models.BooleanField(default=True)
+
+class Shot(models.Model):
+    row = models.IntegerField()
+    col = models.IntegerField()
+    result = models.IntegerField()
+    board = models.ForeignKey(Board, related_name="shots", on_delete=models.CASCADE)
+    game = models.ForeignKey(Game, related_name="shots", on_delete=models.CASCADE)
+    player = models.ForeignKey(Player, related_name="shots", on_delete=models.CASCADE)
+    board_vessel = models.OneToOneField(BoardVessel, on_delete=models.CASCADE)

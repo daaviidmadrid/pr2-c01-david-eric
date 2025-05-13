@@ -21,3 +21,7 @@ urlpatterns = [
 router = DefaultRouter()
 router.register(r'players', PlayerViewSet)
 router.register(r'games', GameViewSet)
+router.register(r'boards', views.BoardViewSet, basename='boards')
+router.register(r'vessels', views.VesselViewSet, basename='vessels')
+router.register(r'board-vessels', views.BoardVesselViewSet, basename='board-vessels')
+router.register(r'shots', views.ShotViewSet, basename='shots')

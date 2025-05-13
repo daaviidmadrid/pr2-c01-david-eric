@@ -4,13 +4,20 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 
-from .models import Player, Game
-from .serializers import UserSerializer, PlayerSerializer, GameSerializer
-
+from .models import Player, Game, Board, Vessel, BoardVessel, Shot
+from .serializers import (
+    UserSerializer,
+    PlayerSerializer,
+    GameSerializer,
+    BoardSerializer,
+    VesselSerializer,
+    BoardVesselSerializer,
+    ShotSerializer,
+)
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    This viewset automatically provides list and retrieve actions for Django User model.
+    Provides list and retrieve for Django User model.
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -37,6 +44,38 @@ class GameViewSet(viewsets.ModelViewSet):
     ordering_fields = ['id']
 
     def perform_create(self, serializer):
-        # Assign the owner of the game to the first User's Player (placeholder logic)
+        # Placeholder: assign owner as first User's Player
         player = get_object_or_404(Player, user=User.objects.first())
         serializer.save(owner=player)
+
+
+class BoardViewSet(viewsets.ModelViewSet):
+    """
+    Provides CRUD for Board.
+    """
+    queryset = Board.objects.all()
+    serializer_class = BoardSerializer
+
+
+class VesselViewSet(viewsets.ModelViewSet):
+    """
+    Provides CRUD for Vessel.
+    """
+    queryset = Vessel.objects.all()
+    serializer_class = VesselSerializer
+
+
+class BoardVesselViewSet(viewsets.ModelViewSet):
+    """
+    Provides CRUD for BoardVessel (placement of vessels on boards).
+    """
+    queryset = BoardVessel.objects.all()
+    serializer_class = BoardVesselSerializer
+
+
+class ShotViewSet(viewsets.ModelViewSet):
+    """
+    Provides CRUD for Shot (player shots on boards).
+    """
+    queryset = Shot.objects.all()
+    serializer_class = ShotSerializer
