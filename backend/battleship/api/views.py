@@ -75,7 +75,7 @@ class BoardVesselViewSet(viewsets.ModelViewSet):
 
 class ShotViewSet(viewsets.ModelViewSet):
     """
-    Provides CRUD for Shot (player shots on boards).
+    Provides CRUD for Shot (player shots on boards)...
     """
     queryset = Shot.objects.all()
     serializer_class = ShotSerializer
