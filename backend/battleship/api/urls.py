@@ -3,7 +3,8 @@ from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework.routers import DefaultRouter
 from . import views
-from .views import PlayerViewSet, GameViewSet
+from .views import PlayerViewSet, GameViewSet, UserViewSet
+
 # Create a router and register our ViewSets with it.
 router = DefaultRouter()
 router.register(r'user', views.UserViewSet, basename='user')
@@ -25,3 +26,4 @@ router.register(r'boards', views.BoardViewSet, basename='boards')
 router.register(r'vessels', views.VesselViewSet, basename='vessels')
 router.register(r'board-vessels', views.BoardVesselViewSet, basename='board-vessels')
 router.register(r'shots', views.ShotViewSet, basename='shots')
+router.register(r'user', UserViewSet)

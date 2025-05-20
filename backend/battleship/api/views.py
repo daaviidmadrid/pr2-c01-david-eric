@@ -3,6 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
+from .serializers import PlayerSerializer, GameSerializer, UserSerializer
 
 from .models import Player, Game, Board, Vessel, BoardVessel, Shot
 from .serializers import (
@@ -15,12 +16,11 @@ from .serializers import (
     ShotSerializer,
 )
 
-class UserViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    Provides list and retrieve for Django User model.
-    """
+class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['username', 'email']
 
 
 class PlayerViewSet(viewsets.ModelViewSet):
