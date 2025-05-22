@@ -5,36 +5,36 @@ from .models import Player, Game, Board, Vessel, BoardVessel, Shot
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = '_all_'
+        fields = ['username', 'email']
 
 class PlayerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Player
-        fields = '_all_'
+        fields = '__all__'
 
 class GameSerializer(serializers.ModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.user.username')
 
     class Meta:
         model = Game
-        fields = '_all_'
+        fields = '__all__'
 
 class BoardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Board
-        fields = '_all_'
+        fields = '__all__'
 
 class VesselSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vessel
-        fields = '_all_'
+        fields = '__all__'
 
 class BoardVesselSerializer(serializers.ModelSerializer):
     class Meta:
         model = BoardVessel
-        fields = '_all_'
+        fields = '__all__'
 
 class ShotSerializer(serializers.ModelSerializer):
     class Meta:
         model = Shot
-        fields = '_all_'
+        fields = '__all__'
