@@ -23,9 +23,9 @@ export const useAuthStore = defineStore("auth", {
       this.error = null;
 
       return AuthService.login(user)
-        .then((response) => {
+      .then((response) => {
           console.log("response", response);
-          response = JSON.parse(response); // this is a mock, in real case it will be axios response
+          // response = JSON.parse(response); // això era una simulació, en el cas real és una resposta d'axios i podem comentar aquesta línia
           this.username = user.username;
           this.accessToken = response.data.access;
           this.refreshToken = response.data.refresh;
@@ -34,16 +34,16 @@ export const useAuthStore = defineStore("auth", {
           localStorage.setItem("username", this.username);
           localStorage.setItem("access", this.accessToken);
           localStorage.setItem("refresh", this.refreshToken);
-        })
-        .catch((error) => {
+      })
+      .catch((error) => {
           console.log("error", error);
           this.error =
-            error.response?.data?.detail || "Login failed. Try again.";
+          error.response?.data?.detail || "Error d'inici de sessió. Torna-ho a intentar.";
           this.isAuthenticated = false;
-        })
-        .finally(() => {
+      })
+      .finally(() => {
           this.loading = false;
-        });
+      });
     },
 
     logout() {
