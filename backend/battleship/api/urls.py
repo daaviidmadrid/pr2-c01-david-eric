@@ -10,6 +10,10 @@ router = DefaultRouter()
 router.register(r'user', views.UserViewSet)
 router.register(r'players', PlayerViewSet)
 router.register(r'games', GameViewSet)
+router.register(r'boards', views.BoardViewSet)
+router.register(r'vessels', views.VesselViewSet)
+router.register(r'boardvessels', views.BoardVesselViewSet)
+router.register(r'shots', views.ShotViewSet)
 
 urlpatterns = [
     path('', include(router.urls))
