@@ -90,6 +90,7 @@ class GameViewSet(viewsets.ModelViewSet):
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return None
 
     @action(detail=True, methods=['get', 'put', 'patch', 'delete'],
             url_path='players/(?P<pid>[^/.]+)/vessels/(?P<vid>[^/.]+)')
@@ -111,6 +112,7 @@ class GameViewSet(viewsets.ModelViewSet):
         elif request.method == 'DELETE':
             vessel.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
+        return None
 
     @action(detail=True, methods=['get', 'post'], url_path='players/(?P<pid>[^/.]+)/shots')
     def player_shots(self, request, pk=None, pid=None):
@@ -129,6 +131,7 @@ class GameViewSet(viewsets.ModelViewSet):
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return None
 
     @action(detail=True, methods=['get'], url_path='players/(?P<pid>[^/.]+)/shots/(?P<sid>[^/.]+)')
     def player_shot_detail(self, request, pk=None, pid=None, sid=None):
