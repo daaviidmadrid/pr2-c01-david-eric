@@ -6,17 +6,22 @@ class AuthService {
       username: user.username,
       password: user.password,
     });
+    //.then(response => {
+    //       localStorage.setItem("username", user.username);
+    //       localStorage.setItem("access", response.data.access);
+    //       localStorage.setItem("refresh", response.data.refresh);
+    //       return response;
+    // });
   }
 
   refresh(refreshToken) {
-    return Promise.resolve(
-      JSON.stringify({
-        access: "mockAccessToken",
-      })
-    );
+    return axios.post("/api/token/refresh/", {
+      refresh: refreshToken
+    });
   }
 
   logout() {
+    localStorage.removeItem("username");
     localStorage.removeItem("access");
     localStorage.removeItem("refresh");
   }
@@ -59,11 +64,14 @@ class AuthService {
         return Promise.reject(error);
       }
     );
-
-    return instance;
   }
-  getAllPlayers() {
-    return this.getAxiosInstance().get("/api/v1/players/");
+    getAllPlayers() {
+    // return this.getAxiosInstance().get("/api/v1/players/");
+    return this.getAxiosInstance().get("/api/v1/players/", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
   }
   //
   // getPlayer(id) {
