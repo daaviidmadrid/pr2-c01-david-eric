@@ -64,6 +64,8 @@ class AuthService {
         return Promise.reject(error);
       }
     );
+    //esto de abajo se deberia de borrar
+    return instance;
   }
     getAllPlayers() {
     // return this.getAxiosInstance().get("/api/v1/players/");
