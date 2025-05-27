@@ -2,16 +2,10 @@ import axios from "axios";
 
 class AuthService {
   login(user) {
-    return Promise.resolve(
-      JSON.stringify({
-        status: 200,
-        data: {
-          access: "mockAccessToken",
-          refresh: "mockRefreshToken",
-        },
-        message: "Login successful",
-      })
-    );
+    return axios.post("/api/token/", {
+      username: user.username,
+      password: user.password,
+    });
   }
 
   refresh(refreshToken) {
@@ -71,6 +65,22 @@ class AuthService {
   getAllPlayers() {
     return this.getAxiosInstance().get("/api/v1/players/");
   }
+  //
+  // getPlayer(id) {
+  //     return this.getAxiosInstance().get(`/api/v1/players/${id}/`);
+  // }
+  //
+  // putPlayer(id, data) {
+  //     return this.getAxiosInstance().put(`/api/v1/players/${id}/`, data);
+  // }
+  //
+  // patchPlayer(id, data) {
+  //     return this.getAxiosInstance().patch(`/api/v1/players/${id}/`, data);
+  // }
+  //
+  // deletePlayer(id) {
+  //     return this.getAxiosInstance().delete(`/api/v1/players/${id}/`);
+  // }
 }
 
 export default new AuthService();
