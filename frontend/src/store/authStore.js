@@ -12,6 +12,21 @@ export const useAuthStore = defineStore("auth", {
     playersList: [],
   }),
   actions: {
+    async getAllPlayers() {
+      console.log("Token", this.accessToken);
+      try {
+        const response = await AuthService.getAllPlayers();
+        for (const player of response.data) {
+          this.playersList.push({
+            id: player.id,
+            nickname: player.nickname,
+          });
+        }
+      } catch (error) {
+        const message = error.response?.data?.detail || error.message;
+        throw new Error(message);
+      }
+    },
     initializeAuthStore() {
       this.username = localStorage.getItem("username");
       this.accessToken = localStorage.getItem("access");
@@ -53,21 +68,6 @@ export const useAuthStore = defineStore("auth", {
       localStorage.removeItem("username");
       localStorage.removeItem("access");
       localStorage.removeItem("refresh");
-    },
-
-    async getAllPlayers() {
-      try {
-        const response = await AuthService.getAllPlayers();
-        for (const player of response.data) {
-          this.playersList.push({
-            id: player.id,
-            nickname: player.nickname,
-          });
-        }
-      } catch (error) {
-        const message = error.response?.data?.detail || error.message;
-        throw new Error(message);
-      }
     },
   },
 });

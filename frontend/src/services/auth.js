@@ -8,12 +8,19 @@ class AuthService {
     });
   }
 
+  register(user) {
+    return axios.post("/api/v1/users/", {
+      username: user.username,
+      email: user.email,
+      password: user.password,
+      password2: user.password2,
+    });
+  }
+
   refresh(refreshToken) {
-    return Promise.resolve(
-      JSON.stringify({
-        access: "mockAccessToken",
-      })
-    );
+    return axios.post("/api/token/refresh/", {
+      refresh: refreshToken,
+    });
   }
 
   logout() {
