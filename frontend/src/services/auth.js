@@ -6,22 +6,24 @@ class AuthService {
       username: user.username,
       password: user.password,
     });
-    //.then(response => {
-    //       localStorage.setItem("username", user.username);
-    //       localStorage.setItem("access", response.data.access);
-    //       localStorage.setItem("refresh", response.data.refresh);
-    //       return response;
-    // });
+  }
+
+  register(user) {
+    return axios.post("/api/v1/users/", {
+      username: user.username,
+      email: user.email,
+      password: user.password,
+      password2: user.password2,
+    });
   }
 
   refresh(refreshToken) {
     return axios.post("/api/token/refresh/", {
-      refresh: refreshToken
+      refresh: refreshToken,
     });
   }
 
   logout() {
-    localStorage.removeItem("username");
     localStorage.removeItem("access");
     localStorage.removeItem("refresh");
   }
@@ -64,16 +66,11 @@ class AuthService {
         return Promise.reject(error);
       }
     );
-    //esto de abajo se deberia de borrar
+
     return instance;
   }
-    getAllPlayers() {
-    // return this.getAxiosInstance().get("/api/v1/players/");
-    return this.getAxiosInstance().get("/api/v1/players/", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+  getAllPlayers() {
+    return this.getAxiosInstance().get("/api/v1/players/");
   }
   //
   // getPlayer(id) {

@@ -7,7 +7,7 @@ from .views import PlayerViewSet, GameViewSet, UserViewSet, BoardViewSet, Vessel
 
 # Create a router and register our ViewSets with it.
 router = DefaultRouter()
-router.register(r'user', UserViewSet)
+router.register(r'users', UserViewSet)
 router.register(r'players', PlayerViewSet)
 router.register(r'games', GameViewSet)
 router.register(r'boards', BoardViewSet)
