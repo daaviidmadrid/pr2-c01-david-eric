@@ -38,19 +38,13 @@ class PlayerViewSet(viewsets.ModelViewSet):
 
 
 class GameViewSet(viewsets.ModelViewSet):
-    """
-    Provides list, create, retrieve, update, destroy for Game.
-    """
     queryset = Game.objects.all()
     serializer_class = GameSerializer
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['phase']
-    ordering_fields = ['id']
 
-    def perform_create(self, serializer):
-        # Placeholder: assign owner as first User's Player
-        player = get_object_or_404(Player, user=User.objects.first())
-        serializer.save(owner=player)
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, context={'request': request})
+        return Response(serializer.data)
 
 class BoardViewSet(viewsets.ModelViewSet):
     """

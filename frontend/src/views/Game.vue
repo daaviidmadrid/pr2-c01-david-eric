@@ -6,6 +6,11 @@ import GameBoard from "../components/GameBoard.vue";
 import DockingArea from "../components/DockingArea.vue";
 import { ref } from "vue";
 import api from "../services/api";
+import { useRoute } from "vue-router";
+
+const route = useRoute();
+const gameId = ref(route.params.gameId);
+
 
 const store = useGameStore();
 const authStore = useAuthStore();
@@ -27,9 +32,9 @@ function getUsers() {
 
 onMounted(() => {
   // To start a new game, uncomment the line below
-  //store.startNewGame();
+  store.startNewGame();
   // To fetch the game state, uncomment the line below
-  store.getGameState();
+  store.getGameState(gameId.value);
   getUsers();
 });
 

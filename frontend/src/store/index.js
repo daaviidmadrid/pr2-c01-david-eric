@@ -25,6 +25,17 @@ export const useGameStore = defineStore("game", {
           throw new Error(message);
         });
     },
+    getGame(gameId) {
+        return api
+            .getGame(gameId)
+            .then((response) => {
+            return response.data;
+            })
+            .catch((error) => {
+            const message = error.response?.data?.detail || error.message;
+            throw new Error(message);
+            });
+    },
 
     async getGameState(gameId) {
       return api
