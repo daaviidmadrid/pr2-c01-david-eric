@@ -34,6 +34,7 @@ class PlayerViewSet(viewsets.ModelViewSet):
     serializer_class = PlayerSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ['nickname']
+    permission_classes = [permissions.AllowAny]
 
 
 class GameViewSet(viewsets.ModelViewSet):
