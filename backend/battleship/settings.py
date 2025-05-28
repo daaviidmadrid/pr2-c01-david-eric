@@ -149,10 +149,12 @@ REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
     'DEFAULT_PERMISSION_CLASSES': [
-        # 'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+        #'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
         'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
@@ -169,11 +171,3 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_REFRESH_LIFETIME_LATE_USER': timedelta(days=1),
     'SLIDING_TOKEN_LIFETIME_LATE_USER': timedelta(days=30),
 }
-
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # o 5175 según tu setup
-]
-
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:5173",  # importante para que no rechace POSTs
-]
