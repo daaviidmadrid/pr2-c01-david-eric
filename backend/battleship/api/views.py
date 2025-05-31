@@ -46,6 +46,56 @@ class GameViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance, context={'request': request})
         return Response(serializer.data)
 
+    @action(detail=True, methods=['post'], url_path='players/(?P<player_id>[^/.]+)/vessels')
+    def add_vessel(self, request, pk=None, player_id=None):
+        game = self.get_object()
+        player = get_object_or_404(Player, pk=player_id)
+
+        # Aquí obtén el board del jugador en ese juego
+        board = Board.objects.filter(game=game, player=player).first()
+        if not board:
+            return Response({"detail": "Board not found."}, status=404)
+
+        vessel_data = request.data.get("vessel", {})
+        vessel = get_object_or_404(Vessel, pk=vessel_data.get("type"))
+
+        board_vessel = BoardVessel.objects.create(
+            board=board,
+            vessel=vessel,
+            ri=vessel_data["x"],
+            ci=vessel_data["y"],
+            rf=vessel_data["x"] + (vessel.size - 1 if vessel_data["isVertical"] else 0),
+            cf=vessel_data["y"] + (0 if vessel_data["isVertical"] else vessel.size - 1),
+        )
+
+        return Response(BoardVesselSerializer(board_vessel).data, status=201)
+
+    def create(self, request, *args, **kwargs):
+        player_id = request.data.get("playerId")
+        multiplayer = request.data.get("multiplayer", False)
+
+        # Obtener el jugador real
+        player = get_object_or_404(Player, id=player_id)
+
+        # Crear el juego y asociar al jugador humano
+        game = Game.objects.create(multiplayer=multiplayer, owner=player)
+        game.players.add(player)
+        Board.objects.create(game=game, player=player)
+
+        # 🔧 Añadir automáticamente el jugador bot
+        bot_user, created = User.objects.get_or_create(username="bot")
+        if created:
+            bot_user.set_password("botpass")  # opcional, no necesario
+            bot_user.save()
+
+        bot_player, _ = Player.objects.get_or_create(user=bot_user, defaults={"nickname": "Bot"})
+        game.players.add(bot_player)
+        Board.objects.create(game=game, player=bot_player)
+
+        # Serializar el juego con contexto (para el game_state_response)
+        serializer = self.get_serializer(game, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 class BoardViewSet(viewsets.ModelViewSet):
     """
     Provides CRUD for Board.
