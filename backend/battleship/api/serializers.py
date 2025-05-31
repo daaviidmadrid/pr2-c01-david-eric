@@ -74,24 +74,22 @@ class GameStateSerializer(serializers.Serializer):
     player2 = serializers.SerializerMethodField()
 
     def get_player1(self, obj):
-        request = self.context.get('request')
-        if not request:
+        players = list(obj.players.all().order_by('id'))
+        if len(players) < 1:
             return None
-        current_player = request.user.player
-        board = Board.objects.get(game=obj, owner=current_player)
-        return PlayerStateSerializer(board).data
+        board = Board.objects.filter(game=obj, player=players[0]).first()
+        return PlayerStateSerializer(board).data if board else None
 
     def get_player2(self, obj):
-        request = self.context.get('request')
-        if not request:
+        players = list(obj.players.all().order_by('id'))
+        if len(players) < 2:
             return None
-        current_player = request.user.player
-        board = obj.board_set.exclude(owner=current_player).first()
+        board = Board.objects.filter(game=obj, player=players[1]).first()
         return PlayerStateSerializer(board).data if board else None
 
 class PlayerStateSerializer(serializers.Serializer):
-    id = serializers.CharField(source='owner.id')
-    username = serializers.CharField(source='owner.nickname')
+    id = serializers.CharField(source='player.id')
+    username = serializers.CharField(source='player.nickname')
     placedShips = serializers.SerializerMethodField()
     availableShips = serializers.SerializerMethodField()
     board = serializers.SerializerMethodField()

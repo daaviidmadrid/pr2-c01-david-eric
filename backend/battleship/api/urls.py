@@ -18,4 +18,3 @@ router.register(r'shots', ShotViewSet)
 urlpatterns = [
     path('', include(router.urls)),
 ]
-

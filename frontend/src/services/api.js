@@ -33,31 +33,33 @@ export default {
   },
 
   getGameState(gameId) {
-    return axiosInstance
-      .get(`/api/v1/games/${gameId}/`)
-      .then((response) => {
-        // Si el backend ya devuelve el objeto en el formato correcto:
-        return response.data;
-        // Si necesitas adaptar el formato, puedes hacerlo aquí antes de retornarlo.
-      });
+    return axiosInstance.get(`/api/v1/games/${gameId}/`);
   },
 
   getUser(id) {
     return axiosInstance.get(`/api/v1/user/${id}`);
   },
 
-  getGame(gameId) {
-    return axiosInstance.get(`/api/v1/games/${gameId}`);
+  async createGame(playerId, multiplayer = false) {
+    const response = await axiosInstance.post(`/api/v1/games/`, {
+      playerId,
+      multiplayer: multiplayer,
+    });
+    return response.data;
   },
 
-  //
-  // getAllGames() {
-  //   return axiosInstance.get('/api/v1/games/');
-  // },
-  //
-  // createGame() {
-  //   return axiosInstance.post('/api/v1/games/');
-  // },
+  addVessel(gameId, playerId, vessel) {
+    return axiosInstance.post(`/api/v1/games/${gameId}/players/${playerId}/vessels/`, { vessel });
+  },
+
+  addPlayerGameShot(gameId, playerId, shotData) {
+    return axiosInstance.post(`/api/v1/games/${gameId}/players/${playerId}/shots/`, { shotData });
+  },
+
+  getGamePlayer(gameId, playerId) {
+    return axiosInstance.get(`/api/v1/games/${gameId}/players/${playerId}/`);
+  },
+
   //
   // putGame(gameId, data) {
   //   return axiosInstance.put(`/api/v1/games/${gameId}/`, {data});

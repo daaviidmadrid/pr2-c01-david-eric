@@ -1,8 +1,12 @@
 import { defineStore } from "pinia";
 import api from "../services/api";
+import { useAuthStore } from "./authStore";
 
 export const useGameStore = defineStore("game", {
   state: () => ({
+    playerId: null,
+    opponentId: null,
+    gameId: null,
     gamePhase: "placement",
     gameStatus: "Place your ships",
     playerBoard: [],
@@ -25,33 +29,34 @@ export const useGameStore = defineStore("game", {
           throw new Error(message);
         });
     },
-    getGame(gameId) {
-        return api
-            .getGame(gameId)
-            .then((response) => {
-            return response.data;
-            })
-            .catch((error) => {
-            const message = error.response?.data?.detail || error.message;
-            throw new Error(message);
-            });
+
+    async createGame(playerId) {
+      return api.createGame(playerId);
     },
 
     async getGameState(gameId) {
       return api
         .getGameState(gameId)
         .then((response) => {
-          response = JSON.parse(response); // this is a mock, in real case it will be axios response
           console.log("response", response);
-          const gameState = response.data.gameState;
+
+          const gameState = response.data?.game_state_response?.data?.gameState;
+          if (!gameState) {
+            throw new Error("Respuesta de gameState inválida");
+          }
+
+          this.playerId = gameState.player1.id;
+          this.opponentId = gameState.player2.id;
+          this.gameId = gameState.gameId;
           this.playerBoard = gameState.player1.board;
           this.opponentBoard = gameState.player2.board;
           this.playerPlacedShips = gameState.player1.placedShips;
           this.opponentShips = gameState.player2.placedShips;
           this.availableShips = gameState.player1.availableShips;
           this.gamePhase = gameState.phase;
-          // this.gameStatus =
-          //   gameState.turn === "player1" ? "Your turn" : "Opponent's turn";
+
+          this.gameStatus =
+             gameState.turn === "player1" ? "Your turn" : "Opponent's turn";
           if (this.gamePhase === "playing") {
             this.gameStatus =
               gameState.turn === "player1" ? "Your turn" : "Opponent's turn";
@@ -82,7 +87,51 @@ export const useGameStore = defineStore("game", {
       this.selectedShip = null;
       this.availableShips = await api.getAvailableShips(); // TODO check with axios on how to avoid await.
 
+      try{
+        const authStore = useAuthStore();
+        authStore.initializeAuthStore();
+        this.playerId = await authStore.getPlayer();
+        if(!this.playerId) {
+          throw new Error("Player ID is not set. Please log in first.");
+        }
+        const game = await this.createGame(this.playerId);
+        console.log("Raw game object received:", game);
+        console.log("Game started with ID:", game.id);
+        this.gameId = game.id;
+        await this.getGameState(this.gameId);
+      } catch (error) {
+        console.error("Error starting new game:", error);
+        throw error;
+      }
+
       this.placeOpponentShips();
+      return
+    },
+
+    addVessel(gameId, playerId, vessel) {
+        return api
+            .addVessel(gameId, playerId, vessel)
+            .then((response) => {
+            console.log("Vessel added:", response.data);
+            return response.data;
+            })
+            .catch((error) => {
+            const message = error.response?.data?.detail || error.message;
+            throw new Error(message);
+            });
+    },
+
+    addPlayerGameShot(gameId, playerId, shotData) {
+        return api
+            .addPlayerGameShot(gameId, playerId, shotData)
+            .then((response) => {
+            console.log("Shot added:", response.data);
+            return response.data;
+            })
+            .catch((error) => {
+            const message = error.response?.data?.detail || error.message;
+            throw new Error(message);
+            });
     },
 
     placeShip(board, row, col, size, isVertical, type) {
@@ -152,35 +201,29 @@ export const useGameStore = defineStore("game", {
       }
     },
 
-    handlePlayerBoardClick(row, col) {
+    async handlePlayerBoardClick(row, col) {
       if (this.gamePhase !== "placement" || !this.selectedShip) return;
 
       const ship = this.selectedShip;
-      if (
-        !this.isValidPlacement(
-          this.playerBoard,
-          row,
-          col,
-          ship.size,
-          ship.isVertical
-        )
-      )
-        return;
+      if (!this.isValidPlacement(this.playerBoard, row, col, ship.size, ship.isVertical)) return;
 
-      this.placeShip(
-        this.playerBoard,
-        row,
-        col,
-        ship.size,
-        ship.isVertical,
-        ship.type
-      );
-
+      this.placeShip(this.playerBoard, row, col, ship.size, ship.isVertical, ship.type);
       this.playerPlacedShips.push({ ...ship, position: { row, col } });
 
-      this.availableShips = this.availableShips.filter(
-        (s) => s.type !== ship.type
-      );
+      try {
+        await api.addVessel(this.gameId, this.playerId, {
+          type: ship.type,
+          x: row,
+          y: col,
+          isVertical: ship.isVertical
+        });
+
+        await this.getGameState(this.gameId);
+      } catch (error) {
+        console.error("Error enviando barco al backend:", error);
+      }
+
+      this.availableShips = this.availableShips.filter(s => s.type !== ship.type);
       this.selectedShip = null;
 
       if (this.availableShips.length === 0) {
@@ -189,28 +232,45 @@ export const useGameStore = defineStore("game", {
       }
     },
 
-    handleOpponentBoardClick(row, col) {
+    // handleOpponentBoardClick(row, col) {
+    //   if (this.gamePhase !== "playing") return;
+    //   if (this.opponentBoard[row][col] < 0) {
+    //     this.gameStatus = "Already hit!";
+    //     return;
+    //   } else if (this.opponentBoard[row][col] === 11) {
+    //     this.gameStatus = "Already missed!";
+    //     return;
+    //   }
+    //   // const isHit = api.checkHit(row, col);
+    //   var isHit = false;
+    //   if (
+    //     this.opponentBoard[row][col] > 0 &&
+    //     this.opponentBoard[row][col] < 10
+    //   ) {
+    //     isHit = true;
+    //   }
+    //
+    //   this.opponentBoard[row][col] = isHit ? -this.opponentBoard[row][col] : 11;
+    //   this.gameStatus = isHit ? "Hit!" : "Miss!";
+    //
+    //   setTimeout(this.opponentTurn, 1000);
+    // },
+
+    async handleOpponentBoardClick(row, col) {
       if (this.gamePhase !== "playing") return;
-      if (this.opponentBoard[row][col] < 0) {
-        this.gameStatus = "Already hit!";
-        return;
-      } else if (this.opponentBoard[row][col] === 11) {
-        this.gameStatus = "Already missed!";
-        return;
-      }
-      // const isHit = api.checkHit(row, col);
-      var isHit = false;
-      if (
-        this.opponentBoard[row][col] > 0 &&
-        this.opponentBoard[row][col] < 10
-      ) {
-        isHit = true;
-      }
 
-      this.opponentBoard[row][col] = isHit ? -this.opponentBoard[row][col] : 11;
-      this.gameStatus = isHit ? "Hit!" : "Miss!";
+      try {
+        // Envía el disparo al backend
+        await api.addGamePlayerShot(this.gameId, this.playerId, { x: row, y: col });
 
-      setTimeout(this.opponentTurn, 1000);
+        // Refresca el estado del juego desde el backend
+        await this.getGameState(this.gameId);
+
+        this.gameStatus = "Esperando respuesta del oponente...";
+      } catch (error) {
+        this.gameStatus = "Error al disparar: " + error.message;
+        console.error(error);
+      }
     },
 
     opponentTurn() {

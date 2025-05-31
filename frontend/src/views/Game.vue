@@ -6,36 +6,12 @@ import GameBoard from "../components/GameBoard.vue";
 import DockingArea from "../components/DockingArea.vue";
 import { ref } from "vue";
 import api from "../services/api";
-import { useRoute } from "vue-router";
-
-const route = useRoute();
-const gameId = ref(route.params.gameId);
-
 
 const store = useGameStore();
 const authStore = useAuthStore();
 
-const user = ref(null);
-
-function getUsers() {
-  api
-    .getUser(1)
-    .then((response) => {
-      console.log(response.data);
-      user.value = response.data;
-    })
-    .catch((error) => {
-      console.error("Error fetching user data:", error);
-    });
-  console.log(user.value);
-}
-
 onMounted(() => {
-  // To start a new game, uncomment the line below
   store.startNewGame();
-  // To fetch the game state, uncomment the line below
-  store.getGameState(gameId.value);
-  getUsers();
 });
 
 const onLogout = () => {
