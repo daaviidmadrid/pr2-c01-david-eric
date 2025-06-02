@@ -9,7 +9,7 @@ from .views import PlayerViewSet, GameViewSet, UserViewSet, BoardViewSet, Vessel
 router = DefaultRouter()
 router.register(r'users', UserViewSet)
 router.register(r'players', PlayerViewSet)
-router.register(r'games', GameViewSet)
+router.register(r'games', GameViewSet, basename='games')
 router.register(r'boards', BoardViewSet)
 router.register(r'vessels', VesselViewSet)
 router.register(r'boardvessels', BoardVesselViewSet)

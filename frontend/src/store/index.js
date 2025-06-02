@@ -55,8 +55,8 @@ export const useGameStore = defineStore("game", {
           this.availableShips = gameState.player1.availableShips;
           this.gamePhase = gameState.phase;
 
-          this.gameStatus =
-             gameState.turn === "player1" ? "Your turn" : "Opponent's turn";
+          //this.gameStatus =
+          //   gameState.turn === "player1" ? "Your turn" : "Opponent's turn";
           if (this.gamePhase === "playing") {
             this.gameStatus =
               gameState.turn === "player1" ? "Your turn" : "Opponent's turn";
@@ -99,6 +99,8 @@ export const useGameStore = defineStore("game", {
         console.log("Game started with ID:", game.id);
         this.gameId = game.id;
         await this.getGameState(this.gameId);
+
+        this.availableShips = await api.getAvailableShips();
       } catch (error) {
         console.error("Error starting new game:", error);
         throw error;
@@ -210,6 +212,8 @@ export const useGameStore = defineStore("game", {
       this.placeShip(this.playerBoard, row, col, ship.size, ship.isVertical, ship.type);
       this.playerPlacedShips.push({ ...ship, position: { row, col } });
 
+      console.log("Añadiendo barco a:", this.gameId, this.playerId);
+
       try {
         await api.addVessel(this.gameId, this.playerId, {
           type: ship.type,
@@ -232,36 +236,12 @@ export const useGameStore = defineStore("game", {
       }
     },
 
-    // handleOpponentBoardClick(row, col) {
-    //   if (this.gamePhase !== "playing") return;
-    //   if (this.opponentBoard[row][col] < 0) {
-    //     this.gameStatus = "Already hit!";
-    //     return;
-    //   } else if (this.opponentBoard[row][col] === 11) {
-    //     this.gameStatus = "Already missed!";
-    //     return;
-    //   }
-    //   // const isHit = api.checkHit(row, col);
-    //   var isHit = false;
-    //   if (
-    //     this.opponentBoard[row][col] > 0 &&
-    //     this.opponentBoard[row][col] < 10
-    //   ) {
-    //     isHit = true;
-    //   }
-    //
-    //   this.opponentBoard[row][col] = isHit ? -this.opponentBoard[row][col] : 11;
-    //   this.gameStatus = isHit ? "Hit!" : "Miss!";
-    //
-    //   setTimeout(this.opponentTurn, 1000);
-    // },
-
     async handleOpponentBoardClick(row, col) {
       if (this.gamePhase !== "playing") return;
 
       try {
         // Envía el disparo al backend
-        await api.addGamePlayerShot(this.gameId, this.playerId, { x: row, y: col });
+        await api.addPlayerGameShot(this.gameId, this.playerId, { x: row, y: col });
 
         // Refresca el estado del juego desde el backend
         await this.getGameState(this.gameId);
