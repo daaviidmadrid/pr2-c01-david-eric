@@ -3,6 +3,7 @@ import AuthService from "../services/auth";
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
+    playerId: null,
     username: null,
     accessToken: null,
     refreshToken: null,
@@ -21,7 +22,12 @@ export const useAuthStore = defineStore("auth", {
             id: player.id,
             nickname: player.nickname,
           });
+          if(player.nickname === this.username) {
+            this.playerId = player.id;
+            localStorage.setItem("playerId", this.playerId);
+          }
         }
+
       } catch (error) {
         const message = error.response?.data?.detail || error.message;
         throw new Error(message);
@@ -31,7 +37,12 @@ export const useAuthStore = defineStore("auth", {
       this.username = localStorage.getItem("username");
       this.accessToken = localStorage.getItem("access");
       this.refreshToken = localStorage.getItem("refresh");
+      this.playerId = localStorage.getItem("playerId");
       this.isAuthenticated = !!this.accessToken;
+    },
+    async getPlayer() {
+      await this.getAllPlayers();
+      return this.playerId;
     },
     login(user) {
       this.loading = true;
@@ -64,10 +75,12 @@ export const useAuthStore = defineStore("auth", {
     logout() {
       this.accessToken = null;
       this.refreshToken = null;
+      this.playerId = null;
       this.isAuthenticated = false;
       localStorage.removeItem("username");
       localStorage.removeItem("access");
       localStorage.removeItem("refresh");
+      localStorage.removeItem("playerId");
     },
   },
 });
