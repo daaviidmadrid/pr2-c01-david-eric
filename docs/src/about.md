@@ -4,16 +4,16 @@
 > Afegiu la informació del grup, substituint G pel grup i XX per l'equip. 
 > Afegiu el nom i cognoms dels membres de l'equip
 
-| Equip | Membre 1     | Membre 2     |
-|-------|--------------|--------------|
-|  GXX  | Cognoms, Nom | Cognoms, Nom | 
+| Equip | Membre 1           | Membre 2         |
+|-------|--------------------|------------------|
+| C01   | Madrid Leon, David | Rubio Poch, Eric | 
 
 
 > [!CAUTION]
 > Afegiu els vostres usuaris de github de la següent forma:
 > ` { {#authors user1,user2} }`. Fixeu-vos en l'exemple d'aquesta pàgina.
 
-{{#authors xbaro,pianoza,eloipuertas}}
+{{#authors daaviidmadrid,rubio9669}}
 
 
 > [!CAUTION]
