@@ -49,7 +49,9 @@ export default {
   },
 
   addVessel(gameId, playerId, vessel) {
-    return axiosInstance.post(`/api/v1/games/${gameId}/players/${playerId}/vessels/`, { vessel });
+    return axiosInstance.post(`/api/v1/games/${gameId}/players/${playerId}/vessels/`, {
+      vessel: vessel,
+    });
   },
 
   addPlayerGameShot(gameId, playerId, shotData) {

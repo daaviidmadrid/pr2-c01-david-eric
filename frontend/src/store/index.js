@@ -7,6 +7,7 @@ export const useGameStore = defineStore("game", {
     playerId: null,
     opponentId: null,
     gameId: null,
+    winner: null,
     gamePhase: "placement",
     gameStatus: "Place your ships",
     playerBoard: [],
@@ -54,6 +55,7 @@ export const useGameStore = defineStore("game", {
           this.opponentShips = gameState.player2.placedShips;
           this.availableShips = gameState.player1.availableShips;
           this.gamePhase = gameState.phase;
+          this.winner = gameState.winner;
 
           //this.gameStatus =
           //   gameState.turn === "player1" ? "Your turn" : "Opponent's turn";
@@ -204,7 +206,7 @@ export const useGameStore = defineStore("game", {
     },
 
     async handlePlayerBoardClick(row, col) {
-      if (this.gamePhase !== "placement" || !this.selectedShip) return;
+      if (this.gamePhase !== "placement" || !this.selectedShip || this.availableShips.length === 0) return;
 
       const ship = this.selectedShip;
       if (!this.isValidPlacement(this.playerBoard, row, col, ship.size, ship.isVertical)) return;
@@ -219,7 +221,7 @@ export const useGameStore = defineStore("game", {
           type: ship.type,
           x: row,
           y: col,
-          isVertical: ship.isVertical
+          isVertical: ship.isVertical,
         });
 
         await this.getGameState(this.gameId);
@@ -227,7 +229,7 @@ export const useGameStore = defineStore("game", {
         console.error("Error enviando barco al backend:", error);
       }
 
-      this.availableShips = this.availableShips.filter(s => s.type !== ship.type);
+      this.availableShips = this.availableShips.filter((s) => s.type !== ship.type);
       this.selectedShip = null;
 
       if (this.availableShips.length === 0) {
@@ -240,18 +242,24 @@ export const useGameStore = defineStore("game", {
       if (this.gamePhase !== "playing") return;
 
       try {
-        // Envía el disparo al backend
         await api.addPlayerGameShot(this.gameId, this.playerId, { x: row, y: col });
 
-        // Refresca el estado del juego desde el backend
+        // Refresca estado tras el disparo del jugador y del bot
         await this.getGameState(this.gameId);
 
-        this.gameStatus = "Esperando respuesta del oponente...";
+        if (this.gamePhase === "gameOver") {
+          this.gameStatus = "Game Over - Winner " + this.winner;
+        } else if (this.gamePhase === "playing") {
+          // 💡 Aquí comprobamos si es un solo jugador
+          this.gameStatus = "Your turn";
+        }
+
       } catch (error) {
         this.gameStatus = "Error al disparar: " + error.message;
         console.error(error);
       }
     },
+
 
     opponentTurn() {
       let row,

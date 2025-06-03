@@ -73,6 +73,11 @@ class GameStateSerializer(serializers.Serializer):
     player1 = serializers.SerializerMethodField()
     player2 = serializers.SerializerMethodField()
 
+    def get_winner(self, obj):
+        if obj.winner:
+            return obj.winner.nickname
+        return None
+
     def get_player1(self, obj):
         players = list(obj.players.all().order_by('id'))
         if len(players) < 1:
@@ -96,15 +101,15 @@ class PlayerStateSerializer(serializers.Serializer):
 
     def get_placedShips(self, board):
         ships = []
-        for vessel in BoardVessel.objects.filter(board=board):
+        for board_vessel in BoardVessel.objects.filter(board=board):
             ships.append({
-                'type': vessel.type.id,
+                'type': board_vessel.vessel.id,
                 'position': {
-                    'row': vessel.ri,
-                    'col': vessel.ci
+                    'row': board_vessel.ri,
+                    'col': board_vessel.ci
                 },
-                'isVertical': vessel.rf != vessel.ri,
-                'size': vessel.type.size
+                'isVertical': board_vessel.rf != board_vessel.ri,
+                'size': board_vessel.vessel.size
             })
         return ships
 
@@ -126,14 +131,37 @@ class PlayerStateSerializer(serializers.Serializer):
         size = board.game.width
         grid = [[0 for _ in range(size)] for _ in range(size)]
 
+        shot_map = {(s.row, s.col): s.result for s in Shot.objects.filter(board=board)}
+
         for vessel in BoardVessel.objects.filter(board=board):
-            value = vessel.type.id if vessel.alive else -vessel.type.id
             for i in range(min(vessel.ri, vessel.rf), max(vessel.ri, vessel.rf) + 1):
                 for j in range(min(vessel.ci, vessel.cf), max(vessel.ci, vessel.cf) + 1):
-                    grid[i][j] = value
+                    if (i, j) in shot_map:
+                        grid[i][j] = -vessel.vessel.id
+                    else:
+                        grid[i][j] = vessel.vessel.id
 
-        for shot in Shot.objects.filter(board=board):
-            if grid[shot.row][shot.col] == 0:
-                grid[shot.row][shot.col] = 11
+        for (i, j), result in shot_map.items():
+            if grid[i][j] == 0:
+                grid[i][j] = 11  # Agua
 
         return grid
+
+    def get_availableShips(self, board):
+        game = board.game
+        player = board.player
+
+        all_vessels = Vessel.objects.all()
+
+        placed_vessels = BoardVessel.objects.filter(board=board).values_list('vessel_id', flat=True)
+
+        available_vessels = []
+        for vessel in all_vessels:
+            if vessel.id not in placed_vessels:
+                available_vessels.append({
+                    "type": vessel.id,
+                    "size": vessel.size,
+                    "isVertical": True
+                })
+
+        return available_vessels
