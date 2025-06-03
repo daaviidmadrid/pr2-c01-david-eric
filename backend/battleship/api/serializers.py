@@ -79,17 +79,13 @@ class GameStateSerializer(serializers.Serializer):
         return None
 
     def get_player1(self, obj):
-        players = list(obj.players.all().order_by('id'))
-        if len(players) < 1:
-            return None
-        board = Board.objects.filter(game=obj, player=players[0]).first()
+        player = obj.players.exclude(user__username="bot").first()
+        board = Board.objects.filter(game=obj, player=player).first()
         return PlayerStateSerializer(board).data if board else None
 
     def get_player2(self, obj):
-        players = list(obj.players.all().order_by('id'))
-        if len(players) < 2:
-            return None
-        board = Board.objects.filter(game=obj, player=players[1]).first()
+        player = obj.players.filter(user__username="bot").first()
+        board = Board.objects.filter(game=obj, player=player).first()
         return PlayerStateSerializer(board).data if board else None
 
 class PlayerStateSerializer(serializers.Serializer):
