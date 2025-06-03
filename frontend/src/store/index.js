@@ -8,6 +8,8 @@ export const useGameStore = defineStore("game", {
     opponentId: null,
     gameId: null,
     winner: null,
+    turn: null,
+    username: null,
     gamePhase: "placement",
     gameStatus: "Place your ships",
     playerBoard: [],
@@ -56,12 +58,13 @@ export const useGameStore = defineStore("game", {
           this.availableShips = gameState.player1.availableShips;
           this.gamePhase = gameState.phase;
           this.winner = gameState.winner;
+          this.turn = gameState.turn;
 
           //this.gameStatus =
           //   gameState.turn === "player1" ? "Your turn" : "Opponent's turn";
           if (this.gamePhase === "playing") {
             this.gameStatus =
-              gameState.turn === "player1" ? "Your turn" : "Opponent's turn";
+              gameState.turn === this.username ? "Your turn" : "Opponent's turn";
           } else if (this.gamePhase === "placement") {
             this.gameStatus = "Place your ships";
           } else if (this.gamePhase === "gameOver") {
@@ -88,11 +91,14 @@ export const useGameStore = defineStore("game", {
       this.opponentShips = [];
       this.selectedShip = null;
       this.availableShips = await api.getAvailableShips(); // TODO check with axios on how to avoid await.
+      this.winner = null;
+
 
       try{
         const authStore = useAuthStore();
         authStore.initializeAuthStore();
         this.playerId = await authStore.getPlayer();
+        this.username = authStore.username;
         if(!this.playerId) {
           throw new Error("Player ID is not set. Please log in first.");
         }
@@ -255,27 +261,10 @@ export const useGameStore = defineStore("game", {
         }
 
       } catch (error) {
-        this.gameStatus = "Error al disparar: " + error.message;
+        const detail = error.response?.data?.detail;
+        this.gameStatus = "Error al disparar" + (detail ? `: ${detail}` : ".");
         console.error(error);
       }
-    },
-
-
-    opponentTurn() {
-      let row,
-        col,
-        valid = false;
-      while (!valid) {
-        row = Math.floor(Math.random() * 10);
-        col = Math.floor(Math.random() * 10);
-        valid =
-          this.playerBoard[row][col] >= 0 && this.playerBoard[row][col] < 10;
-      }
-
-      const isHit =
-        this.playerBoard[row][col] > 0 && this.playerBoard[row][col] < 10;
-      this.playerBoard[row][col] = isHit ? -this.playerBoard[row][col] : 11;
-      this.gameStatus = "Your turn";
     },
   },
 });
